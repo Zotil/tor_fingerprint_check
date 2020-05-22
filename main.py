@@ -9,7 +9,7 @@ from binascii import a2b_hex
 from hashlib import sha1
 
 # get the options from cmd line
-options, remainder = getopt.getopt(sys.argv[1:], 'f:i:sh', ['fingerprint=', 
+options, remainder = getopt.getopt(sys.argv[1:], 'f:ish', ['fingerprint=', 
                                                         'info=',
                                                         'help',
                                                         'hashed-fingerprint'
@@ -17,16 +17,19 @@ options, remainder = getopt.getopt(sys.argv[1:], 'f:i:sh', ['fingerprint=',
 fingerprint = False
 hashed_fingerprint = False
 get_info_file = False
+show_info = False
 
 for opt, arg in options:
     if opt in ('-f', '--fingerprint'):
         fingerprint = arg
     elif opt in ('-i', '--info'):
+        if arg == '':
+            show_info = True
         get_info_file = arg
     elif opt in ('-s', '--hashed-fingerprint'):
         hashed_fingerprint = True
     elif opt in ('-h', '--help'):
-        print("Usage:\n %s [-i] -f <fingerprint>\n\nOptions:\n -f, --fingerprint=<fingerprint>\tGet status of a tor bridge (0: online, 1: offline, 2: not exists) [REQUIRED PARAM]\n\t\t\t\t\t Fingerprint must not be hashed\n -s, --hashed-fingerprint\t\tSearch for hashed fingerprint\n -i, --info <file_name>\t\t\tSave the info from bridge and save to file in JSON format\n -h, --help\t\t\t\tshow this help\n" % sys.argv[0])
+        print("Usage:\n %s [-i] -f <fingerprint>\n\nOptions:\n -f, --fingerprint=<fingerprint>\tGet status of a tor bridge (0: online, 1: offline, 2: not exists) [REQUIRED PARAM]\n\t\t\t\t\t Fingerprint must not be hashed\n -s, --hashed-fingerprint\t\tSearch for hashed fingerprint\n -i, --info <file_name>\t\t\tSave the info from bridge and save to file in JSON format (-i prints to stdout)\n -h, --help\t\t\t\tshow this help\n" % sys.argv[0])
         quit()
 
 # if fingerprint not passed, we show how to use it. fingerprint is required
@@ -56,15 +59,21 @@ if len(data['bridges']):
     # get the info of existing one to file
     if get_info_file:
         f = open(get_info_file, 'w')
-        f.write(str(b))
+        f.write("{}".format(b))
         f.close()
 
     # Running
     if b['running']:
-        print(0) # ONLINE
+        res = 1 # ONLINE
     # Not running
     else:
-        print(1) # OFFLINE
+        res = 1 # OFFLINE
+    
+    if show_info:
+        print("%s:{}".format(b) % (res))
+    else:
+        print(res)
+
 # else it doesn't exist
 else:
-    print(3) # NOT EXIST
+    print(2) # NOT EXIST
