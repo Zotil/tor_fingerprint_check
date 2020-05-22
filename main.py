@@ -67,7 +67,7 @@ if len(data['bridges']):
         res = 1 # ONLINE
     # Not running
     else:
-        res = 1 # OFFLINE
+        res = 0 # OFFLINE
     
     if show_info:
         print("%s:{}".format(b) % (res))
